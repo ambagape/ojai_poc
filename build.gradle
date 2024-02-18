@@ -26,6 +26,9 @@ repositories {
     maven {
         url "https://repository.mapr.com/nexus/content/groups/mapr-public"
     }
+ maven {
+        url "https://repository.mulesoft.org/nexus/content/repositories/public/"
+    }
 }
 
 dependencies {

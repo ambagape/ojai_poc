@@ -1,5 +1,6 @@
 package com.ext.dependency.jar;
 
+import com.test.processor.UsersRepository;
 import org.ojai.Document;
 import org.ojai.DocumentStream;
 import org.ojai.store.*;
@@ -9,6 +10,7 @@ import java.util.Map;
 
 // This Java file is located in external jar file
 public class MainJsonRepository {
+
     final Connection connection = DriverManager.getConnection("ojai:mapr:");
     protected DocumentStore jsonStore;
     private String table_path;
@@ -57,5 +59,24 @@ public class MainJsonRepository {
 
     protected List<Document> query(QueryCondition queryCondition) {
         throw new UnsupportedOperationException("Not implemented yet !!!!!!!!!!!!!");
+    }
+
+    public static class MainJsonRepositoryFactory {
+
+        public static MainJsonRepository createMainJsonRepository(String path) {
+            return new MainJsonRepository(path);
+        }
+
+        public static UsersRepository createUsersRepository(String path, boolean useBufferedWrite) {
+            return new UsersRepository(path, useBufferedWrite);
+        }
+        
+        public static UsersRepository createUsersRepository(String path) {
+            return new UsersRepository(path);
+        }
+
+        public static UsersRepository createDefaultUsersRepository() {
+            return new UsersRepository();
+        }
     }
 }
