@@ -1,7 +1,8 @@
 package com.test.processor;
 
 import com.ext.dependency.jar.MainJsonRepository;
-import com.mapr.db.MapRDB;
+import java.util.ArrayList;
+import java.util.Iterator;
 import org.ojai.Document;
 import org.ojai.DocumentStream;
 import org.ojai.store.QueryCondition;
@@ -10,14 +11,13 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Repository
 public class UsersRepository extends MainJsonRepository {
 
     private static final String TABLE_PATH = "groupData";
 
-    private final String[] fields = { "_id" };
+    private final String[] fields = {"_id"};
 
     public UsersRepository(String path, boolean useBufferedWrite) {
         super(path, useBufferedWrite);
@@ -32,27 +32,42 @@ public class UsersRepository extends MainJsonRepository {
     }
 
     public List<String> getRegisteredUsersByDate() {
-        List<Document> documents = jsonStore.getAllDocuments(fields);
-        return documents.stream().filter(Objects::nonNull)
-                .map(Document::getIdString)
-                .collect(Collectors.toList());
+        final var ids = new ArrayList<String>();
+        final var query = this.connection.newQuery()
+                .select(fields).build();
+        try (final var stream = jsonStore.find(query)) {
+            stream.forEach(document -> {
+                if (Objects.nonNull(document)) {
+                    ids.add(document.getIdString());
+                }
+            });
+        }
+
+        return ids;
     }
 
-    public List<Document> getRegisteredUsers(List<String> users) {
-        QueryCondition condition = MapRDB.newCondition().and().in("documentId", users).close()
-                        .build();
+    public Iterator<Document> getRegisteredUsers(List<String> users) {
+        QueryCondition condition = connection.newCondition().and().in("documentId", users)
+                .close()
+                .build();
 
-        return jsonStore.query(condition, "documentId");
+        final var query = this.connection.newQuery()
+                .select(new String[]{"documentId"})
+                .where(condition).build();
+        final var result = jsonStore.find(query);
+        return result.iterator();
     }
 
     public DocumentStream getUsers() {
-        QueryCondition queryCondition = MapRDB.newCondition().and()
+        QueryCondition queryCondition = connection.newCondition().and()
                 .is("username", QueryCondition.Op.EQUAL, new OTimestamp(null))
                 .is("year", QueryCondition.Op.EQUAL, new OTimestamp(null))
                 .close().build();
 
-        String[] fields = new String[0];
-        return jsonStore.queryAsStream(queryCondition, fields);
+        final var query = this.connection.newQuery()
+                .select(new String[]{})
+                .where(queryCondition).build();
+        return jsonStore.find(query);
     }
 
 }

@@ -11,13 +11,14 @@ import java.util.Map;
 // This Java file is located in external jar file
 public class MainJsonRepository {
 
-    final Connection connection = DriverManager.getConnection("ojai:mapr:");
-    protected DocumentStore jsonStore;
-    private String table_path;
+    protected final Connection connection;
+    protected final DocumentStore jsonStore;
+    private final String tablePath;
 
-    protected MainJsonRepository(String table_path) {
+    protected MainJsonRepository(String tablePath) {
+        this.connection = DriverManager.getConnection("ojai:mapr:");
         this.jsonStore = this.connection.getStore("/demo_table");
-        this.table_path = table_path;
+        this.tablePath = tablePath;
     }
 
     public Document createDocument() {
@@ -41,7 +42,6 @@ public class MainJsonRepository {
     }
 
     public MainJsonRepository(String path, boolean useBufferedWrite) {
-        this.jsonStore = this.connection.getStore("/demo_table");
         throw new UnsupportedOperationException("Not implemented yet !!!!!!!!!!!!!");
     }
 
